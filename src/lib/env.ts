@@ -22,18 +22,28 @@ export function serviceRoleKey(): string | null {
   return k && !k.startsWith("YOUR-") ? k : null;
 }
 
+export type AiProviderName = "anthropic" | "openai" | "mock";
+
 export function aiConfig() {
   const provider = (process.env.AI_PROVIDER || "none").toLowerCase();
   const apiKey = process.env.AI_API_KEY || "";
   const model = process.env.AI_MODEL || "";
+  const timeoutMs = Number(process.env.AI_TIMEOUT_MS) || 25_000;
+
+  // A clearly labelled demo adapter for local development and automated tests only.
+  // It is ignored in production so mock output can never pass as real analysis.
+  if (provider === "mock") {
+    if (process.env.NODE_ENV === "production") return null;
+    return { provider: "mock" as const, apiKey: "", model: "mock", baseUrl: undefined, timeoutMs };
+  }
   if (provider === "none" || !apiKey || !model) return null;
   if (provider !== "anthropic" && provider !== "openai") return null;
   return {
-    provider: provider as "anthropic" | "openai",
+    provider: provider as AiProviderName,
     apiKey,
     model,
     baseUrl: process.env.AI_BASE_URL || undefined,
-    timeoutMs: Number(process.env.AI_TIMEOUT_MS) || 25_000,
+    timeoutMs,
   };
 }
 

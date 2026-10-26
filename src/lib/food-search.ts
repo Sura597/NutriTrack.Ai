@@ -5,6 +5,8 @@ import type { ScalableFood } from "@/lib/nutrition/units";
 export interface FoodHit extends ScalableFood {
   id: string;
   food_name: string;
+  normalized_name: string;
+  aliases: string[];
   category: string;
   dietary_type: "vegan" | "vegetarian" | "eggetarian" | "non_vegetarian";
   allergens: string[];
@@ -36,6 +38,8 @@ export async function searchFoods(supabase: SupabaseClient, rawQuery: string, li
   const hits: FoodHit[] = (data ?? []).map((r: Record<string, unknown>) => ({
     id: r.id as string,
     food_name: r.food_name as string,
+    normalized_name: r.normalized_name as string,
+    aliases: (r.aliases as string[]) ?? [],
     category: r.category as string,
     dietary_type: r.dietary_type as FoodHit["dietary_type"],
     allergens: (r.allergens as string[]) ?? [],

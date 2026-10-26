@@ -10,7 +10,7 @@ export const GET = authed(async ({ supabase, user }) => {
 
 export const PATCH = authed(async ({ supabase, user, req }) => {
   const body = await parseJson(req, profilePatchSchema);
-  const { time_zone, terms_accepted, ...fields } = body;
+  const { time_zone, terms_accepted, store_food_images, ...fields } = body;
   const update: Record<string, unknown> = { ...fields };
   if (terms_accepted) update.terms_accepted_at = new Date().toISOString();
 
@@ -21,6 +21,15 @@ export const PATCH = authed(async ({ supabase, user, req }) => {
   if (time_zone) {
     const { error } = await supabase.from("user_settings").upsert({ user_id: user.id, time_zone }, { onConflict: "user_id" });
     if (error) dbError(error, "settings update");
+  }
+
+  if (store_food_images !== undefined) {
+    const current = await loadSettings(supabase, user.id);
+    const { error } = await supabase
+      .from("user_settings")
+      .update({ privacy_preferences: { ...current.privacy_preferences, store_food_images } })
+      .eq("user_id", user.id);
+    if (error) dbError(error, "privacy update");
   }
 
   const profile = await loadProfile(supabase, user.id);
