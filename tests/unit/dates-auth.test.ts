@@ -78,3 +78,16 @@ describe("friendlyAuthError", () => {
     expect(friendlyAuthError("some internal secret detail xyz")).toBe("Something went wrong. Please try again.");
   });
 });
+
+import { consumedAtFor } from "@/lib/dates";
+describe("consumedAtFor", () => {
+  const now = new Date("2026-03-10T10:00:00Z"); // 15:30 IST on 10 Mar
+  it("uses the current instant for today", () => {
+    expect(consumedAtFor("2026-03-10", "Asia/Kolkata", "lunch", now)).toBe(now);
+  });
+  it("uses a typical local meal time for past days", () => {
+    expect(consumedAtFor("2026-03-09", "Asia/Kolkata", "breakfast", now).toISOString()).toBe("2026-03-09T03:00:00.000Z"); // 08:30 IST
+    expect(consumedAtFor("2026-03-09", "Asia/Kolkata", "dinner", now).toISOString()).toBe("2026-03-09T14:30:00.000Z"); // 20:00 IST
+    expect(localDateOf(consumedAtFor("2026-03-09", "Asia/Kolkata", "dinner", now), "Asia/Kolkata")).toBe("2026-03-09");
+  });
+});

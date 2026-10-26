@@ -70,3 +70,21 @@ export function formatLongDate(date: string): string {
     timeZone: "UTC",
   });
 }
+
+/** Representative local clock time for meals logged on a past date. */
+const DEFAULT_MEAL_TIME: Record<string, string> = {
+  breakfast: "08:30:00",
+  lunch: "13:00:00",
+  dinner: "20:00:00",
+  snack: "16:30:00",
+};
+
+/**
+ * When a meal was eaten. Today: the current instant. Any other day: a sensible
+ * local time for that meal type, so the day's ordering reads naturally.
+ */
+export function consumedAtFor(date: string, tz: string, mealType: string, now: Date = new Date()): Date {
+  if (date === todayIn(tz, now)) return now;
+  const time = DEFAULT_MEAL_TIME[mealType] ?? "12:00:00";
+  return fromZonedTime(`${date}T${time}`, tz);
+}

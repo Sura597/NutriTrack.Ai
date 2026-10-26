@@ -7,7 +7,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts"],
+    include: ["tests/unit/**/*.test.{ts,tsx}", "tests/integration/**/*.test.ts"],
     coverage: { provider: "v8", include: ["src/lib/**"] },
   },
 });
