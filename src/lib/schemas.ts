@@ -43,6 +43,7 @@ export const profilePatchSchema = profileSchema.partial().extend({
   terms_accepted: z.literal(true).optional(),
   time_zone: z.string().refine(isValidTimeZone, "Unknown time zone").optional(),
   store_food_images: z.boolean().optional(),
+  price_adjustment_pct: z.number().min(-50).max(200).optional(),
 });
 
 export const targetsPatchSchema = z

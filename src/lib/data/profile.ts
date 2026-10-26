@@ -24,6 +24,7 @@ export interface ProfileRow {
   has_medical_condition: boolean;
   eating_disorder_history: boolean;
   region: string;
+  price_adjustment_pct: number;
   onboarding_completed: boolean;
   terms_accepted_at: string | null;
 }
@@ -56,6 +57,7 @@ function normalizeProfile(r: Record<string, unknown>): ProfileRow {
     current_weight_kg: num(r.current_weight_kg),
     target_weight_kg: num(r.target_weight_kg),
     daily_budget_inr: num(r.daily_budget_inr),
+    price_adjustment_pct: num(r.price_adjustment_pct) ?? 0,
   };
 }
 
