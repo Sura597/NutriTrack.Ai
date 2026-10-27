@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireOnboardedUser } from "@/lib/data/session";
 import { daySummary } from "@/lib/data/logs";
 import { isDateString, todayIn } from "@/lib/dates";
@@ -78,6 +79,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </div>
 
       <WaterCard entries={water.entries} totalMl={water.total_ml} goalMl={profile.water_goal_ml} isToday={date === today} date={date} timeZone={tz} />
+
+      <Link href="/plan" className="flex items-center justify-between rounded-[var(--radius-card)] border border-border bg-card px-5 py-4 text-sm font-medium hover:bg-muted">
+        <span>See a simple diet plan for your calorie target</span>
+        <span aria-hidden>→</span>
+      </Link>
 
       <MicronutrientsCard summary={summary} />
     </div>

@@ -42,6 +42,7 @@ const ROUTES: Record<string, string[]> = {
   "water/logs/[id]": ["DELETE"],
   "water/summary": ["GET"],
   "recommendations/affordable-foods": ["GET"],
+  "recommendations/diet-plan": ["GET"],
   "nutrition/history": ["GET"],
   "nutrition/summary": ["GET"],
   "nutrition/targets": ["GET", "PATCH"],
@@ -133,6 +134,7 @@ describe("request validation (signed in)", () => {
     expect((await call((await load("nutrition/history")).GET, "GET", undefined, "http://localhost/api/x?range=year")).status).toBe(400);
     expect((await call((await load("nutrition/summary")).GET, "GET", undefined, "http://localhost/api/x?date=2026-13-45")).status).toBe(400);
     expect((await call((await load("water/summary")).GET, "GET", undefined, "http://localhost/api/x?date=nope")).status).toBe(400);
+    expect((await call((await load("recommendations/diet-plan")).GET, "GET", undefined, "http://localhost/api/x?variant=-4")).status).toBe(400);
     expect((await call((await load("food/search")).GET, "GET", undefined, "http://localhost/api/x")).status).toBe(400);
     expect((await call((await load("recommendations/affordable-foods")).GET, "GET", undefined, "http://localhost/api/x?filters=bogus")).status).toBe(400);
   });

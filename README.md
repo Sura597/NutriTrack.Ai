@@ -17,6 +17,7 @@ The product name is configurable (`NEXT_PUBLIC_APP_NAME`).
 | Nutrition data | Database-first (85 Indian foods seeded, with aliases and household units); AI only for what the table can't resolve; AI output is schema-validated and treated as untrusted |
 | Eat Healthy on a Budget | `/foods`: protein-per-rupee ranking, diet and allergen filtering, filter chips, adjustable local price percentage |
 | Water | Daily water goal, quick-add buttons (150/250/500 ml or custom) on the dashboard, 7/30-day chart in Insights |
+| Diet plan | `/plan`: a simple one-day plan built from the food table to match your calorie target, diet and allergies (no AI); withheld when no target is set |
 | Insights | `/insights`: today / 7 days / 30 days, trend charts with target lines, top foods, calories by meal, weight tracking |
 | Security | RLS on every user table, private storage bucket, server-only secrets, per-user AI quota, Zod validation on every route |
 

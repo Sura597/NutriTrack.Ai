@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Home, Leaf, ListChecks, Plus, Salad, User } from "lucide-react";
+import { BarChart3, CalendarDays, Home, Leaf, ListChecks, Plus, Salad, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -10,6 +10,7 @@ const links = [
   { href: "/log", label: "Food Log", short: "Log", icon: ListChecks },
   { href: "/insights", label: "Insights", short: "Insights", icon: BarChart3 },
   { href: "/foods", label: "Affordable Foods", short: "Foods", icon: Salad },
+  { href: "/plan", label: "Diet Plan", short: "Plan", icon: CalendarDays },
   { href: "/profile", label: "Profile & Settings", short: "Profile", icon: User },
 ];
 
@@ -78,7 +79,7 @@ export function MobileNav({ onLog }: { onLog?: () => void }) {
           </button>
         </div>
         {item(links[3])}
-        {item(links[4])}
+        {item(links[5])}
       </div>
     </nav>
   );
