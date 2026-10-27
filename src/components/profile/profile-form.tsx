@@ -27,7 +27,7 @@ const COOKING_LABELS: Record<string, string> = {
 interface FormState {
   display_name: string; date_of_birth: string; sex: string; height_cm: string; current_weight_kg: string;
   target_weight_kg: string; activity_level: string; goal: string; dietary_preference: string;
-  allergies: string[]; restrictions: string; daily_budget_inr: string; food_preferences: string;
+  allergies: string[]; restrictions: string; daily_budget_inr: string; water_goal_ml: string; food_preferences: string;
   cooking_facilities: string[]; pregnant_or_breastfeeding: boolean; has_medical_condition: boolean;
   eating_disorder_history: boolean;
 }
@@ -46,6 +46,7 @@ function initial(p: ProfileRow | null): FormState {
     allergies: p?.allergies ?? [],
     restrictions: (p?.dietary_restrictions ?? []).join(", "),
     daily_budget_inr: p?.daily_budget_inr?.toString() ?? "",
+    water_goal_ml: String(p?.water_goal_ml ?? 2500),
     food_preferences: p?.food_preferences ?? "",
     cooking_facilities: p?.cooking_facilities ?? [],
     pregnant_or_breastfeeding: p?.pregnant_or_breastfeeding ?? false,
@@ -61,7 +62,7 @@ const STEPS = ["About you", "Activity & goal", "Food & budget", "Health notes"] 
 const STEP_FIELDS: string[][] = [
   ["display_name", "date_of_birth", "sex", "height_cm", "current_weight_kg", "target_weight_kg"],
   ["activity_level", "goal"],
-  ["dietary_preference", "allergies", "dietary_restrictions", "daily_budget_inr", "food_preferences", "cooking_facilities"],
+  ["dietary_preference", "allergies", "dietary_restrictions", "daily_budget_inr", "water_goal_ml", "food_preferences", "cooking_facilities"],
   ["pregnant_or_breastfeeding", "has_medical_condition", "eating_disorder_history"],
 ];
 
@@ -91,6 +92,7 @@ export function ProfileForm({ mode, profile, timeZoneInitial }: { mode: Mode; pr
       allergies: s.allergies,
       dietary_restrictions: s.restrictions.split(",").map((x) => x.trim()).filter(Boolean),
       daily_budget_inr: numOrNull(s.daily_budget_inr),
+      water_goal_ml: numOrNull(s.water_goal_ml) ?? 2500,
       food_preferences: s.food_preferences.trim() === "" ? null : s.food_preferences,
       cooking_facilities: s.cooking_facilities,
       pregnant_or_breastfeeding: s.pregnant_or_breastfeeding,
@@ -245,6 +247,9 @@ export function ProfileForm({ mode, profile, timeZoneInitial }: { mode: Mode; pr
             </Field>
             <Field id="p-budget" label="Daily food budget (₹)" hint="Optional. Helps us suggest foods that fit." error={errors.daily_budget_inr}>
               <Input id="p-budget" inputMode="decimal" placeholder="e.g. 150" value={s.daily_budget_inr} onChange={(e) => set("daily_budget_inr", e.target.value)} />
+            </Field>
+            <Field id="p-water" label="Daily water goal (ml)" hint="A general starting point is 2500 ml. Needs vary; ask your doctor if you have fluid limits." error={errors.water_goal_ml}>
+              <Input id="p-water" inputMode="numeric" value={s.water_goal_ml} onChange={(e) => set("water_goal_ml", e.target.value)} />
             </Field>
             <fieldset className="sm:col-span-2">
               <legend className="mb-2 text-sm font-medium">Food allergies</legend>

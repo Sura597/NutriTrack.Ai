@@ -16,6 +16,7 @@ The product name is configurable (`NEXT_PUBLIC_APP_NAME`).
 | Logging | Photo, text or voice; always reviewed and editable before saving; search and manual entry |
 | Nutrition data | Database-first (85 Indian foods seeded, with aliases and household units); AI only for what the table can't resolve; AI output is schema-validated and treated as untrusted |
 | Eat Healthy on a Budget | `/foods`: protein-per-rupee ranking, diet and allergen filtering, filter chips, adjustable local price percentage |
+| Water | Daily water goal, quick-add buttons (150/250/500 ml or custom) on the dashboard, 7/30-day chart in Insights |
 | Insights | `/insights`: today / 7 days / 30 days, trend charts with target lines, top foods, calories by meal, weight tracking |
 | Security | RLS on every user table, private storage bucket, server-only secrets, per-user AI quota, Zod validation on every route |
 
@@ -38,7 +39,7 @@ Without Supabase variables the app starts and shows a **/setup** page; `/api/*` 
 
 1. Create a project at [supabase.com](https://supabase.com).
 2. **Project Settings → API**: copy the Project URL, the `anon`/publishable key, and the `service_role` key into `.env.local`. The service-role key is server-only (used for account deletion and storage cleanup). Never prefix it with `NEXT_PUBLIC_` and never commit it.
-3. **Apply the migrations**, in order, from `supabase/migrations/` (0001 → 0007):
+3. **Apply the migrations**, in order, from `supabase/migrations/` (0001 → 0008):
    - Easiest: open **SQL Editor** and run each file in order; or
    - With the CLI: `npx supabase login && npx supabase link --project-ref <ref> && npx supabase db push`.
 4. **Authentication → Providers → Email**: enabled by default. Decide whether to require email confirmation (recommended on).

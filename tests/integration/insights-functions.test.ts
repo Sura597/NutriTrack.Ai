@@ -62,3 +62,48 @@ describe("insight aggregation functions", () => {
     expect(r.rows).toHaveLength(0);
   });
 });
+
+describe("water tracking (migration 0008)", () => {
+  let db: PGlite;
+  let alice: string;
+  let bob: string;
+  const add = (uid: string, at: string, ml: number) =>
+    asUser(db, uid, () => db.query(`insert into public.water_logs (user_id, consumed_at, amount_ml) values ($1, $2::timestamptz, $3)`, [uid, at, ml]));
+
+  beforeAll(async () => {
+    db = await createTestDb();
+    alice = await createUser(db, "Alice");
+    bob = await createUser(db, "Bob");
+    await add(alice, "2026-03-10T18:00:00Z", 500); // 23:30 IST, 10 Mar
+    await add(alice, "2026-03-10T19:00:00Z", 250); // 00:30 IST, 11 Mar
+    await add(alice, "2026-03-10T04:00:00Z", 300); // 09:30 IST, 10 Mar
+    await add(bob, "2026-03-10T04:00:00Z", 1000);
+  }, 60_000);
+  afterAll(async () => {
+    await db.close();
+  });
+
+  it("totals per local day and only for the caller", async () => {
+    const rows = await asUser(db, alice, async () =>
+      (await db.query<{ day: string; total_ml: string }>(`select day::text, total_ml::text from public.daily_water('2026-03-09Z', '2026-03-13Z', 'Asia/Kolkata')`)).rows,
+    );
+    expect(rows).toEqual([{ day: "2026-03-10", total_ml: "800" }, { day: "2026-03-11", total_ml: "250" }]);
+  });
+  it("hides other users' entries and blocks inserting for someone else", async () => {
+    const seen = await asUser(db, bob, async () => (await db.query(`select * from public.water_logs`)).rows.length);
+    expect(seen).toBe(1);
+    await expect(asUser(db, bob, () => db.query(`insert into public.water_logs (user_id, amount_ml) values ($1, 200)`, [alice]))).rejects.toThrow();
+  });
+  it("rejects silly amounts and a goal outside 500–8000 ml", async () => {
+    await expect(add(alice, "2026-03-10T04:00:00Z", 5)).rejects.toThrow();
+    await expect(add(alice, "2026-03-10T04:00:00Z", 9000)).rejects.toThrow();
+    await expect(asUser(db, alice, () => db.query(`update public.profiles set water_goal_ml = 100 where id = $1`, [alice]))).rejects.toThrow();
+  });
+  it("only the owner can delete an entry", async () => {
+    const id = (await asUser(db, alice, async () => (await db.query<{ id: string }>(`select id from public.water_logs limit 1`)).rows[0].id));
+    const del = await asUser(db, bob, () => db.query(`delete from public.water_logs where id = $1 returning id`, [id]));
+    expect(del.rows).toHaveLength(0);
+    const mine = await asUser(db, alice, () => db.query(`delete from public.water_logs where id = $1 returning id`, [id]));
+    expect(mine.rows).toHaveLength(1);
+  });
+});

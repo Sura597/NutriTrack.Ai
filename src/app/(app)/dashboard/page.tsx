@@ -7,6 +7,8 @@ import { SummaryCard } from "@/components/dashboard/summary-card";
 import { MicronutrientsCard } from "@/components/dashboard/micronutrients-card";
 import { LogCard } from "@/components/dashboard/log-card";
 import { DateNav } from "@/components/dashboard/date-nav";
+import { WaterCard } from "@/components/dashboard/water-card";
+import { waterForDay } from "@/lib/water/summary";
 import { LogFoodButton } from "@/components/dashboard/log-food-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Notice } from "@/components/ui/misc";
@@ -24,6 +26,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   const { logs, summary } = await daySummary(supabase, user.id, tz, date);
   const byMeal = groupByMeal(logs);
+  const water = await waterForDay(supabase, tz, date);
   const firstName = (profile.display_name ?? "").split(" ")[0];
 
   return (
@@ -73,6 +76,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           );
         })}
       </div>
+
+      <WaterCard entries={water.entries} totalMl={water.total_ml} goalMl={profile.water_goal_ml} isToday={date === today} date={date} timeZone={tz} />
 
       <MicronutrientsCard summary={summary} />
     </div>

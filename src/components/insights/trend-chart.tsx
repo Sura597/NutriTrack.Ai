@@ -4,23 +4,22 @@ import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { DayPoint } from "@/lib/insights/stats";
 
 interface Props {
   title: string;
-  metric: "calories_kcal" | "protein_g";
   unit: string;
   color: string;
   target: number | null;
-  series: DayPoint[];
+  /** One point per day; value is null for days with nothing logged. */
+  points: { day: string; value: number | null }[];
 }
 
 const shortDay = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
 
 /** One series per chart (the title names it); days with no log are left empty, not drawn as zero intake. */
-export function TrendChart({ title, metric, unit, color, target, series }: Props) {
+export function TrendChart({ title, unit, color, target, points }: Props) {
   const [view, setView] = useState<"chart" | "table">("chart");
-  const data = series.map((d) => ({ day: d.day, value: d.logged ? Math.round(d[metric]) : null }));
+  const data = points.map((d) => ({ day: d.day, value: d.value === null ? null : Math.round(d.value) }));
   const hasData = data.some((d) => d.value !== null);
 
   return (

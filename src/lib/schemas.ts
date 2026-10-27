@@ -30,6 +30,7 @@ export const profileSchema = z.object({
   allergies: z.array(z.enum(ALLERGEN_OPTIONS)).max(8),
   dietary_restrictions: z.array(z.string().trim().min(1).max(60)).max(10),
   daily_budget_inr: z.number().min(0).max(100000).nullable(),
+  water_goal_ml: z.number().int("Enter a whole number of ml").min(500, "At least 500 ml").max(8000, "At most 8000 ml"),
   food_preferences: z.string().trim().max(500).nullable(),
   cooking_facilities: z.array(z.enum(COOKING_OPTIONS)).max(5),
   pregnant_or_breastfeeding: z.boolean(),
@@ -106,4 +107,9 @@ export const weightLogSchema = z.object({
   weight_kg: z.number().min(20).max(400),
   measured_at: z.string().datetime().optional(),
   notes: z.string().trim().max(500).nullable().optional(),
+});
+
+export const waterLogSchema = z.object({
+  amount_ml: z.number().int().min(10, "Enter at least 10 ml").max(3000, "That's more than 3 litres in one go"),
+  consumed_at: z.string().datetime().optional(),
 });

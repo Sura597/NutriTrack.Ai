@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { dbError } from "@/lib/api";
-import { addDays, dayRange, todayIn } from "@/lib/dates";
+import { addDays, dateSpan, dayRange, todayIn } from "@/lib/dates";
 import { loadTargets } from "@/lib/data/profile";
 import { RANGE_DAYS, buildSeries, computeStats, type DailyRow, type InsightRange } from "@/lib/insights/stats";
 
@@ -13,12 +13,15 @@ export async function loadInsights(supabase: SupabaseClient, userId: string, tz:
   const start = dayRange(from, tz).start.toISOString();
   const end = dayRange(to, tz).end.toISOString();
 
-  const [daily, top, meals, targets] = await Promise.all([
+  const [daily, top, meals, targets, waterRes] = await Promise.all([
     supabase.rpc("daily_nutrition", { p_from: start, p_to: end, p_tz: tz }),
     supabase.rpc("top_foods", { p_from: start, p_to: end, p_limit: 8 }),
     supabase.rpc("meal_type_totals", { p_from: start, p_to: end }),
     loadTargets(supabase, userId),
+    supabase.rpc("daily_water", { p_from: start, p_to: end, p_tz: tz }),
   ]);
+  if (waterRes.error) dbError(waterRes.error, "daily_water");
+  const waterByDay = new Map(((waterRes.data ?? []) as Record<string, unknown>[]).map((r) => [String(r.day), n(r.total_ml)]));
   if (daily.error) dbError(daily.error, "daily_nutrition");
   if (top.error) dbError(top.error, "top_foods");
   if (meals.error) dbError(meals.error, "meal_type_totals");
@@ -33,11 +36,18 @@ export async function loadInsights(supabase: SupabaseClient, userId: string, tz:
     fiber_g: n(r.fiber_g),
   }));
   const series = buildSeries(from, to, rows);
+  const water = dateSpan(from, to).map((day) => ({ day, total_ml: waterByDay.get(day) ?? 0, logged: waterByDay.has(day) }));
+  const waterLogged = water.filter((w) => w.logged);
   return {
     range,
     from,
     to,
     series,
+    water,
+    water_stats: {
+      days_logged: waterLogged.length,
+      avg_ml: waterLogged.length ? Math.round(waterLogged.reduce((a, w) => a + w.total_ml, 0) / waterLogged.length) : null,
+    },
     stats: computeStats(series, targets),
     targets: targets ? { calories_kcal: targets.calories_kcal, protein_g: targets.protein_g, carbs_g: targets.carbs_g, fat_g: targets.fat_g } : null,
     top_foods: ((top.data ?? []) as Record<string, unknown>[]).map((r) => ({ food_name: String(r.food_name), times: n(r.times), avg_kcal: n(r.avg_kcal) })),

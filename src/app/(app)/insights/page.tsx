@@ -19,7 +19,7 @@ const RANGES: { id: InsightRange; label: string }[] = [
 const MEAL_LABEL: Record<string, string> = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner", snack: "Snacks" };
 
 export default async function InsightsPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
-  const { supabase, user, settings } = await requireOnboardedUser();
+  const { supabase, user, settings, profile } = await requireOnboardedUser();
   const sp = await searchParams;
   const range: InsightRange = sp.range === "day" || sp.range === "month" ? sp.range : "week";
   const ins = await loadInsights(supabase, user.id, settings.time_zone, range);
@@ -60,7 +60,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
 
       {stats.days_logged === 0 && <Notice tone="info">Nothing logged in this period yet. Log a meal and your trends will show up here.</Notice>}
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {tiles.map((t) => (
           <Card key={t.label}>
             <CardContent className="p-4">
@@ -74,8 +74,9 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
 
       {range !== "day" && (
         <div className="grid gap-4 lg:grid-cols-2">
-          <TrendChart title="Calories" metric="calories_kcal" unit="kcal" color="var(--primary)" target={ins.targets?.calories_kcal ?? null} series={ins.series} />
-          <TrendChart title="Protein" metric="protein_g" unit="g" color="var(--protein)" target={ins.targets?.protein_g ?? null} series={ins.series} />
+          <TrendChart title="Calories" unit="kcal" color="var(--primary)" target={ins.targets?.calories_kcal ?? null} points={ins.series.map((d) => ({ day: d.day, value: d.logged ? d.calories_kcal : null }))} />
+          <TrendChart title="Protein" unit="g" color="var(--protein)" target={ins.targets?.protein_g ?? null} points={ins.series.map((d) => ({ day: d.day, value: d.logged ? d.protein_g : null }))} />
+          <TrendChart title="Water" unit="ml" color="var(--protein)" target={profile.water_goal_ml} points={ins.water.map((d) => ({ day: d.day, value: d.logged ? d.total_ml : null }))} />
         </div>
       )}
 

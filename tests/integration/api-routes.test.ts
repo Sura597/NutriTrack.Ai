@@ -38,6 +38,9 @@ const ROUTES: Record<string, string[]> = {
   "weight/history": ["GET"],
   "weight/logs": ["POST"],
   "weight/logs/[id]": ["DELETE"],
+  "water/logs": ["POST"],
+  "water/logs/[id]": ["DELETE"],
+  "water/summary": ["GET"],
   "recommendations/affordable-foods": ["GET"],
   "nutrition/history": ["GET"],
   "nutrition/summary": ["GET"],
@@ -85,6 +88,11 @@ describe("request validation (signed in)", () => {
     ["food/analyze-text", "POST", { nope: 1 }],
     ["weight/logs", "POST", { weight_kg: 5 }],
     ["weight/logs", "POST", { weight_kg: "heavy" }],
+    ["water/logs", "POST", { amount_ml: 5 }],
+    ["water/logs", "POST", { amount_ml: 5000 }],
+    ["water/logs", "POST", { amount_ml: 250.5 }],
+    ["water/logs", "POST", { amount_ml: "a glass" }],
+    ["profile", "PATCH", { water_goal_ml: 100 }],
     ["weight/logs", "POST", { weight_kg: 70, measured_at: "yesterday" }],
     ["food/logs", "POST", { meal_type: "brunch", items: [] }],
     ["nutrition/targets", "PATCH", { calories_kcal: 50 }],
@@ -114,6 +122,8 @@ describe("request validation (signed in)", () => {
     const mod = await load("food/logs/[id]");
     const res = await mod.GET(new Request("http://localhost/api/x"), { params: Promise.resolve({ id: "not-a-uuid" }) });
     expect(res.status).toBe(404);
+    const wl = await load("water/logs/[id]");
+    expect((await wl.DELETE(new Request("http://localhost/api/x", { method: "DELETE" }), { params: Promise.resolve({ id: "nope" }) })).status).toBe(400);
     const w = await load("weight/logs/[id]");
     const res2 = await w.DELETE(new Request("http://localhost/api/x", { method: "DELETE" }), { params: Promise.resolve({ id: "nope" }) });
     expect(res2.status).toBe(400);
@@ -122,6 +132,7 @@ describe("request validation (signed in)", () => {
   it("validates query parameters", async () => {
     expect((await call((await load("nutrition/history")).GET, "GET", undefined, "http://localhost/api/x?range=year")).status).toBe(400);
     expect((await call((await load("nutrition/summary")).GET, "GET", undefined, "http://localhost/api/x?date=2026-13-45")).status).toBe(400);
+    expect((await call((await load("water/summary")).GET, "GET", undefined, "http://localhost/api/x?date=nope")).status).toBe(400);
     expect((await call((await load("food/search")).GET, "GET", undefined, "http://localhost/api/x")).status).toBe(400);
     expect((await call((await load("recommendations/affordable-foods")).GET, "GET", undefined, "http://localhost/api/x?filters=bogus")).status).toBe(400);
   });
